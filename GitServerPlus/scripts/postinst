@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Get the package destination.
+eval $(env | grep "^SYNOPKG_PKGDEST=")
+
+# Create a symlink to the 3rdparty folder.
+ret=`ln -s "${SYNOPKG_PKGDEST}/gitserverplus" /usr/syno/synoman/webman/3rdparty/gitserverplus`
+
+# Change the owner to the admin.
+ret=`chown -R admin.users $SYNOPKG_PKGDEST`
+
+exit 0

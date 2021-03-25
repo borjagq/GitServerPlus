@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Remove the symlink in the 3rdparty folder.
+rm -f /usr/syno/synoman/webman/3rdparty/gitserverplus
+
+exit 0
