@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Remove the previous one.
+rm GitServerPlus.spk
+
 # Create a package.tgz file containing the package folder and files.
 cd ./GitServerPlus/package
 tar -cvzf ../package.tgz --exclude='.DS_Store' --exclude='.git' *

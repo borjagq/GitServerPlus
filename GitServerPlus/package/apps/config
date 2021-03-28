@@ -1,0 +1,12 @@
+{
+	".url": {
+		"BGQ.GSP.GitRepoManager": {
+			"title":	"Git Repo Manager",
+			"desc":		"Repository manager that allows to create, delete and edit repositories.",
+			"icon":		"icons/GitRepoManager_{0}.png",
+			"type":		"legacy",
+			"url":		"webman/3rdparty/GitServerPlus/manager.html",
+			"allUsers":	false
+		}
+	}
+}
