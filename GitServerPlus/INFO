@@ -15,7 +15,3 @@ install_dep_packages="Git"
 instuninst_restart_services="nginx"
 dsmuidir="apps"
 #install_type="system"
-# RES: adminprotocol://ip:adminport/adminurl
-#adminprotocol="https"
-#adminport="9002"
-#adminurl="borjagq.com"
