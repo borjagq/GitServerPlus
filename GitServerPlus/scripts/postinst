@@ -5,5 +5,8 @@ eval $(env | grep "^SYNOPKG_PKGDEST=")
 
 # Give user execution permissions to all those admin users.
 chmod u+x $SYNOPKG_PKGDEST/apps/*.cgi
+chmod u+x $SYNOPKG_PKGDEST/apps/*/*.cgi
+chmod u+x $SYNOPKG_PKGDEST/apps/*/*/*.cgi
+chmod u+x $SYNOPKG_PKGDEST/apps/*/*/*/*.cgi
 
 exit 0

@@ -4,7 +4,7 @@
  * Parses a HTTP response.
  *
  * Receives a string containing a HTTP response formed by headers and a message.
- *  * 
+ * 
  * @param string $response
  * @return array
  */
@@ -82,6 +82,42 @@ function http_parse_response($response) {
 	}
 
 	return $ret_val;
+
+}
+
+/**
+ * Obtains a UI string.
+ *
+ * Obtains the final string that will be displayed on the user interface.
+ * 
+ * @param string $str
+ * @param array $vals Optional.
+ * @return string
+ */
+function get_ui_string($str, $vals=false) {
+
+	// If we have no $vals.
+	if ($vals === false)
+		return $str;
+
+	// Format the string.
+	return vsprintf($str, $vals);
+
+}
+
+/**
+ * Integer division.
+ * 
+ * Performs an integer division.
+ * 
+ * @param int $dividend
+ * @param int $divisor
+ * @return int
+ */
+function bgq_intdiv($dividend, $divisor) {
+
+	// Return the division.
+	return floor($dividend / $divisor);
 
 }
 
