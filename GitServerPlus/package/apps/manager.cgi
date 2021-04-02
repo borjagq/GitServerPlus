@@ -36,13 +36,15 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 	<head>
 		<meta charset="UTF-8">
 		<title>Git Repo Manager</title>
-		<link href="/webman/3rdparty/GitServerPlus/styles/fontawesome/css/all.min.cgi" rel="stylesheet">
+		<link href="/webman/3rdparty/GitServerPlus/styles/fontawesome/css/all.min.css" rel="stylesheet">
+		<link href="/webman/3rdparty/GitServerPlus/styles/selectable/selectable.css" rel="stylesheet">
 		<style>
 
 			:root {
 				--main-text-color: #505A64;
 				--background-color: #FFFFFF;
 				--gray-color: #C8D2DC;
+				--secondary-color: #215FA6;
 			}
 
 			* {
@@ -109,6 +111,15 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				background-image: linear-gradient(#f5faff,#f0f5fa);
 				background-color: #F0F5FA;
 				cursor: pointer;
+				display: inline-block;
+				line-height: 26px;
+			}
+
+			button.color {
+				border: solid 1px var(--secondary-color);
+				background-image: linear-gradient(#3D80CC, #2466B2);
+				background-color: #2466B2;
+				color: var(--background-color);
 			}
 
 			button:first-child {
@@ -126,6 +137,12 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				background-color: #EBF0F5;
 			}
 
+			button.color:hover {
+				border: solid 1px #0E498C;
+				background-image: linear-gradient(#337ACC, #125DB2);
+				background-color: #125DB2;
+			}
+
 			button:active {
 				border: solid 1px #B4BEC8;
 				background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ViZjBmNSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2U2ZWJmMCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
@@ -135,6 +152,12 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				background-image: -webkit-linear-gradient(#ebf0f5,#e6ebf0);
 				background-image: linear-gradient(#ebf0f5,#e6ebf0);
 				background-color: #E6EBF0;
+			}
+
+			button.color:active {
+				border: solid 1px #0E498C;
+				background-image: linear-gradient(#266EBF, #1156A6);
+				background-color: #1156A6;
 			}
 
 			.repos {
@@ -223,7 +246,37 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				right: 0;
 				bottom: 0;
 				left: 0;
+			}
+
+			.pop-up-window-wrapper:last-of-type {
 				background-color: #ffffff88;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window {
+				width: 500px;
+				height: 368px;
+				margin: auto;
+				position: absolute;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				left: 0;
+				background-color: var(--background-color);
+				box-shadow: 0px 4px 8px #00000066;
+				border: 1px solid var(--gray-color);
+				
+			}
+
+			.pop-up-window-wrapper > .pop-up-window > .pop-up-container > nav {
+				position: static;
+				padding: 20px 0 0 0;
+				border-bottom: none;
+				background: transparent;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window nav > table > tbody > tr > td {
+				padding: 0;
+				text-align: right;
 			}
 
 			.pop-up-window-wrapper > .pop-up-window.processing {
@@ -250,9 +303,105 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				background-image: url(data:image/gif;base64,R0lGODlhGAAYAJECACpYjMjS3P///wAAACH/C05FVFNDQVBFMi4wAwEAAAAh/wtYTVAgRGF0YVhNUDw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NDkxMSwgMjAxMy8xMC8yOS0xMTo0NzoxNiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChXaW5kb3dzKSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDoxMDlCMUQ4QTVGRDcxMUU0ODk3NEVENEQ3MEI2RDMwMyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDoxMDlCMUQ4QjVGRDcxMUU0ODk3NEVENEQ3MEI2RDMwMyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjEwOUIxRDg4NUZENzExRTQ4OTc0RUQ0RDcwQjZEMzAzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjEwOUIxRDg5NUZENzExRTQ4OTc0RUQ0RDcwQjZEMzAzIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+Af/+/fz7+vn49/b19PPy8fDv7u3s6+rp6Ofm5eTj4uHg397d3Nva2djX1tXU09LR0M/OzczLysnIx8bFxMPCwcC/vr28u7q5uLe2tbSzsrGwr66trKuqqainpqWko6KhoJ+enZybmpmYl5aVlJOSkZCPjo2Mi4qJiIeGhYSDgoGAf359fHt6eXh3dnV0c3JxcG9ubWxramloZ2ZlZGNiYWBfXl1cW1pZWFdWVVRTUlFQT05NTEtKSUhHRkVEQ0JBQD8+PTw7Ojk4NzY1NDMyMTAvLi0sKyopKCcmJSQjIiEgHx4dHBsaGRgXFhUUExIREA8ODQwLCgkIBwYFBAMCAQAAIfkEBQ8AAgAsAAAAABgAGAAAAkiUj6nLnQBjNKFai6Sm92Y9CZ13gOGIlSbAoZ/Zji8Yd/MmosEt1aQDDAoRul3OdSj6UstK0/iMJnVSqXKKvFqpWNnROwyLDwUAIfkEBQ8AAgAsAgACABQACQAAAh2MfyLA3QiVmxDJ+aq5GOi9dN7HYV9QUmTYnalTAAAh+QQFDwACACwNAAIACQAUAAACFIyPqcvtD4+YtFoKst68+w+G4qgVACH5BAUPAAIALAIADQAUAAkAAAIdhH8iwd0IlZsQyfmquTjovXTex2EfUFJk2J2pUwAAOw==);
 				background-repeat: no-repeat;
 				background-color: var(--background-color);
+				border-radius: 2px;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window > .pop-up-container {
+				padding: 20px;
+			}
+
+			.repo-info {
+				width 100%;
+			}
+
+			.repo-info #field_team > table {
+				width: 150px;
+			}
+
+			.repo-info td:nth-of-type(2) span {
+				display: inline-block;
+				width: 20px;
+				text-align: center;
+				font-weight: bold;
+			}
+
+			.repo-info td:nth-of-type(3) {
+				width: 100%;
+			}
+
+			.pop-up-window input[type=text] {
+				width: 100%;
+				height: 26px;
+				margin: 0;
+				padding: 0 14px;
+				font-family: inherit;
+				font-size: 12px;
+				font-weight: normal;
+				vertical-align: top;
+				color: var(--main-text-color);
+				outline: 0;
+				border: solid 1px var(--gray-color);
+				border-radius: 3px;
+				display: inline-block;
+			}
+
+			.pop-up-window > .pop-up-container > div > label,
+			.pop-up-window > .pop-up-container > .repo-info > tbody > tr > td > label {
+				font-size: 12px;
+				color: var(--main-text-color);
+				margin-bottom: 10px;
+				display: inline-block;
+			}
+
+			.pop-up-window > .pop-up-container > * {
+				margin-bottom: 15px;
+			}
+
+			label.required::after {
+				content: "*";
+				margin-left: 5px;
+				color: var(--secondary-color);
+				font-weight: bold;
+			}
+
+			.pop-up-window ul {
+				list-style: none;
+			}
+
+			.pop-up-window ul > li {
+				margin-top: 10px;
+			}
+
+			.pop-up-window label > input[type=radio] {
+				display: none;
+			}
+
+			.pop-up-window label > input[type=radio] + i {
+				display: inline-block;
+				height: 15px;
+				width: 15px;
+				border: 2px solid var(--secondary-color);
+				border-radius: 100%;
+			}
+
+			.pop-up-window label > input[type=radio]:checked + i {
+				border: 6px solid var(--secondary-color);
+			}
+
+			.pop-up-window label > input[type=radio] + i + p {
+				width: calc(100% - 25px);
+				display: inline-block;
+				margin-left: 5px;
+				vertical-align: top;
+			}
+
+			.pop-up-window label > input[type=radio] + i + p > * {
+				display: block;
 			}
 
 		</style>
+		<script src="/webman/3rdparty/GitServerPlus/js/jquery/jquery.js.cgi"></script>
+		<script src="/webman/3rdparty/GitServerPlus/js/selectable/selectable.js.cgi"></script>
 		<script>
 
 			// Open the dialog to create a new repository.
@@ -274,8 +423,8 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 					<tbody>
 						<tr>
 							<td>
-								<button id="create_new_repo" onclick="create_new_repo();"><?php echo get_ui_string("Nuevo repositorio"); ?></button>
-								<button id="create_new_repo" onclick="refresh_page();"><?php echo get_ui_string("Refrescar"); ?></button>
+								<button onclick="create_new_repo();"><?php echo get_ui_string("Nuevo repositorio"); ?></button>
+								<button onclick="refresh_page();"><?php echo get_ui_string("Refrescar"); ?></button>
 							</td>
 						</tr>
 					</tbody>
@@ -368,6 +517,90 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				?>
 			</div>
 		</div>
+		<div class="pop-up-window-wrapper">
+			<div class="pop-up-window">
+				<form id="create_new_repo" class="pop-up-container" method="post">
+					<table class="repo-info">
+						<tbody>
+							<tr>
+								<td>
+									<label class="required" for="field_team"><?php echo get_ui_string("Equipo"); ?></label>
+								</td>
+								<td></td>
+								<td>
+									<label class="required" for="field_name"><?php echo get_ui_string("Nombre del repositorio"); ?></label>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div id="field_team"></div>
+								</td>
+								<td><span>/</span></td>
+								<td>
+									<input id="field_name" name="name" type="text" required />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div>
+						<label for="field_desc"><?php echo get_ui_string("Descripción"); ?></label>
+						<input id="field_desc" name="desc" type="text" />
+					</div>
+					<div>
+						<ul>
+							<li>
+								<label>
+									<input name="access" type="radio" value="1" required />
+									<i></i>
+									<p>
+										<b><?php echo get_ui_string("Público"); ?></b>
+										<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull y hacer push."); ?></span>
+									</p>
+								</label>
+							</li>
+							<li>
+								<label>
+									<input name="access" type="radio" value="2" required />
+									<i></i>
+									<p>
+										<b><?php echo get_ui_string("Protegido"); ?></b>
+										<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull pero solo los del grupo pueden hacer push."); ?></span>
+									</p>
+								</label>
+							</li>
+							<li>
+								<label>
+									<input name="access" type="radio" value="3" required checked />
+									<i></i>
+									<p>
+										<b><?php echo get_ui_string("Privado"); ?></b>
+										<span><?php echo get_ui_string("Solo los usuarios del grupo pueden hacer pull y push."); ?></span>
+									</p>
+								</label>
+							</li>
+						</ul>
+					</div>
+					<nav class="bottom-menu">
+						<table>
+							<tbody>
+								<tr>
+									<td>
+										<button id="submit" class="color"><?php echo get_ui_string("Guardar"); ?></button>
+										<button id="close_pop_up"><?php echo get_ui_string("Cancelar"); ?></button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</nav>
+				</form>
+			</div>
+		</div>
+		<script>
+
+			// Create the select.
+			$("#field_team").selectable('team', ['value 1', 'value 2', 'value 3', 'vaue 4'], '-- Equipo --', true);
+
+		</script>
 		<!--
 		<div class="pop-up-window-wrapper">
 			<div class="pop-up-window processing">

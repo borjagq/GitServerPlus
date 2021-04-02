@@ -1,0 +1,106 @@
+:root {
+	--selectable-main-text-color: #505A64;
+	--selectable-background-color: #FFFFFF;
+	--selectable-gray-color: #C8D2DC;
+	--selectable-selected-color: #2A588C;
+}
+
+.selectable {
+	position: relative;
+	display: inline-block;
+}
+
+.selectable * {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.selectable thead,
+.selectable thead tr,
+.selectable thead tr th {
+	display: block;
+}
+
+.selectable th label {
+	height: 26px;
+	width: 100%;
+	padding: 0 14px;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: normal;
+	color: var(--selectable-main-text-color);
+	outline: 0;
+	border: solid 1px var(--selectable-gray-color);
+	border-radius: 3px;
+	background-repeat: no-repeat;
+	background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiP…dpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
+	background-size: 100%;
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f5faff),color-stop(100%, #f0f5fa));
+	background-image: -moz-linear-gradient(#f5faff,#f0f5fa);
+	background-image: -webkit-linear-gradient(#f5faff,#f0f5fa);
+	background-image: linear-gradient(#f5faff,#f0f5fa);
+	background-color: #F0F5FA;
+	cursor: pointer;
+	line-height: 26px;
+	display: block;
+}
+
+.selectable th label > span {
+	width: calc(100% - 20px);
+	display: inline-block;
+	text-align: left;
+}
+
+.selectable th label::after {
+	content: "▾";
+	display: inline-block;
+	width: 20px;
+	text-align: right;
+}
+
+.selectable tbody {
+	width: 100%;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: normal;
+	color: var(--selectable-main-text-color);
+	border: solid 1px var(--selectable-gray-color);
+	border-radius: 2px;
+	background-color: var(--selectable-background-color);
+	display: block;
+	box-shadow: 0 3px 5px #a2a2a2;
+	padding: 5px;
+	position: absolute;
+	top: calc(100% + 5px);
+	visibility: hidden;
+}
+
+.selectable.visible tbody {
+	visibility: visible;
+}
+
+.selectable tbody * {
+	width: 100%;
+	display: block;
+}
+
+.selectable tbody td label span {
+	padding: 5px 14px;
+	display: block;
+	cursor: pointer;
+}
+
+.selectable tbody td label span:hover {
+	background-color: var(--selectable-selected-color);
+	color: var(--selectable-background-color);
+}
+
+.selectable tbody td label input:checked + span {
+	background-color: var(--selectable-selected-color);
+	color: var(--selectable-background-color);
+}
+
+.selectable input {
+	display: none;
+}
