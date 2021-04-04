@@ -271,6 +271,79 @@ class Repo {
 		return posix_getgrgid(filegroup($path))['name'];
 
 	}
+
+	/**
+	 * Set the repo's access level.
+	 *
+	 * Sets the permissions of the repository based on the acces level.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param int Access level.
+	 */
+	public function setAccess($access) {
+		
+		// Get the path of the repo.
+		$path = $this->git_dir->getPathname();
+
+		// Switch through the options.
+		switch ($access) {
+
+			// Public.
+			case 1:
+				shell_exec("chmod -R u=rwx,g=rwx,o=rw $path");
+				break;
+
+			// Protected.
+			case 2:
+				shell_exec("chmod -R u=rwx,g=rwx,o=r $path");
+				break;
+
+			case 3:
+				shell_exec("chmod -R u=rwx,g=rwx,o= $path");
+				break;
+
+		}
+
+	}
+
+	/**
+	 * Set the repo's description.
+	 *
+	 * Sets the description of the repository.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string Repository's description.
+	 */
+	public function setDesc($desc) {
+		
+		// Get the path of the repo.
+		$path = $this->git_dir->getPathname();
+
+		// Store the content of the description.
+		file_put_contents($path . '/description', $desc);
+
+	}
+
+	/**
+	 * Set the repo's team.
+	 *
+	 * Sets the team (group) which owns the repository.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string Repository's owning group's name.
+	 */
+	public function setTeam($team) {
+		
+		// Get the path of the repo.
+		$path = $this->git_dir->getPathname();
+
+		// Set the group.
+		shell_exec("chgrp -R $team $path");
+
+	}
 	
 }
 

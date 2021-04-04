@@ -113,6 +113,7 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				cursor: pointer;
 				display: inline-block;
 				line-height: 26px;
+				min-width: 65px;
 			}
 
 			button.color {
@@ -272,11 +273,16 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				padding: 20px 0 0 0;
 				border-bottom: none;
 				background: transparent;
+				margin-bottom: 0;
 			}
 
 			.pop-up-window-wrapper > .pop-up-window nav > table > tbody > tr > td {
 				padding: 0;
 				text-align: right;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-alert nav > table > tbody > tr > td {
+				text-align: center;
 			}
 
 			.pop-up-window-wrapper > .pop-up-window.processing {
@@ -287,6 +293,15 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				width: 100%;
 				height: 40px;
 				text-align: center;
+				background-color: transparent;
+				box-shadow: none;
+				border: none;
+				cursor: wait;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-alert {
+				width: 400px;
+				height: 153px;
 			}
 
 			.pop-up-window-wrapper > .pop-up-window.processing > span {
@@ -310,11 +325,17 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				padding: 20px;
 			}
 
+			.pop-up-window-wrapper > .pop-up-window.pop-up-alert > .pop-up-container > span {
+				display: inline-block;
+				height: 48px;
+				width: 100%;
+			}
+
 			.repo-info {
 				width 100%;
 			}
 
-			.repo-info #field_team > table {
+			.repo-info .field_team > table {
 				width: 150px;
 			}
 
@@ -404,15 +425,268 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 		<script src="/webman/3rdparty/GitServerPlus/js/selectable/selectable.js.cgi"></script>
 		<script>
 
+			// Processing message.
+			function processing_message(msg) {
+
+				// Create the processing message.
+				var proc = $('<div class="pop-up-window-wrapper">' +
+					'<div class="pop-up-window processing">' +
+						'<span>' + msg + '</span>' +
+					'</div>' +
+				'</div>');
+
+				// Append it to the body.
+				$('body').append(proc);
+
+				return proc;
+
+			}
+
+			// Alert message.
+			function alert_message(msg) {
+
+				// Create the processing message.
+				var alrt = $('<div class="pop-up-window-wrapper">' +
+					'<div class="pop-up-window pop-up-alert">' +
+						'<div class="pop-up-container">' +
+							'<span>' + msg + '</span>' +
+							'<nav class="bottom-menu">' +
+								'<table>' +
+									'<tbody>' +
+										'<tr>' +
+											'<td>' +
+												'<button class="color" onclick="close_this_window(event);"><?php echo get_ui_string("OK"); ?></button>' +
+											'</td>' +
+										'</tr>' +
+									'</tbody>' +
+								'</table>' +
+							'</nav>' +
+						'</div>' +
+					'</div>' +
+				'</div>');
+
+				// Append it to the body.
+				$('body').append(alrt);
+
+				return alrt;
+
+			}
+
 			// Open the dialog to create a new repository.
-			function create_new_repo() {
-				console.log("Hello, create!");
+			function create_new_repo(e) {
+				
+				// Put the wait message.
+				var proc = processing_message('<?php echo get_ui_string("Espere..."); ?>');
+
+				// Make an AJAX call to GitServerPlus to get the groups.
+				$.ajax({
+					url: 	"/webman/3rdparty/GitServerPlus/ajax.cgi",
+					method:	"GET",
+					data: 	{
+						'func':	'get_groups'
+					}
+				}).done(function(msg) {
+
+					// Remove the processing message.
+					proc.remove();
+
+					// Parse the message.
+					msg = JSON.parse(msg);
+
+					// Check if it was successful or not.
+					if (!msg.success) {
+
+						// Log an error window.
+						var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido completar la acción."); ?>');
+
+						return;
+
+					}
+
+					// Get the groups.
+					var groups = msg.return;
+
+					// Create the dialog window.
+					var dial = '<div class="pop-up-window-wrapper">' +
+						'<div class="pop-up-window">' +
+							'<form id="create_new_repo" class="pop-up-container" method="GET">' +
+								'<table class="repo-info">' +
+									'<tbody>' +
+										'<tr>' +
+											'<td>' +
+												'<label class="required"><?php echo get_ui_string("Equipo"); ?></label>' +
+											'</td>' +
+											'<td></td>' +
+											'<td>' +
+												'<label class="required" for="field_name"><?php echo get_ui_string("Nombre del repositorio"); ?></label>' +
+											'</td>' +
+										'</tr>' +
+										'<tr>' +
+											'<td>' +
+												'<div class="field_team"></div>' +
+											'</td>' +
+											'<td><span>/</span></td>' +
+											'<td>' +
+												'<input id="field_name" name="name" type="text" pattern="[A-Za-z0-9]+" required />' +
+											'</td>' +
+										'</tr>' +
+									'</tbody>' +
+								'</table>' +
+								'<div>' +
+									'<label for="field_desc"><?php echo get_ui_string("Descripción"); ?></label>' +
+									'<input id="field_desc" name="desc" type="text" />' +
+								'</div>' +
+								'<div>' +
+									'<ul>' +
+										'<li>' +
+											'<label>' +
+												'<input name="access" type="radio" value="1" required />' +
+												'<i></i>' +
+												'<p>' +
+													'<b><?php echo get_ui_string("Público"); ?></b>' +
+													'<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull y hacer push."); ?></span>' +
+												'</p>' +
+											'</label>' +
+										'</li>' +
+										'<li>' +
+											'<label>' +
+												'<input name="access" type="radio" value="2" required />' +
+												'<i></i>' +
+												'<p>' +
+													'<b><?php echo get_ui_string("Protegido"); ?></b>' +
+													'<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull pero solo los del grupo pueden hacer push."); ?></span>' +
+												'</p>' +
+											'</label>' +
+										'</li>' +
+										'<li>' +
+											'<label>' +
+												'<input name="access" type="radio" value="3" required checked />' +
+												'<i></i>' +
+												'<p>' +
+													'<b><?php echo get_ui_string("Privado"); ?></b>' +
+													'<span><?php echo get_ui_string("Solo los usuarios del grupo pueden hacer pull y push."); ?></span>' +
+												'</p>' +
+											'</label>' +
+										'</li>' +
+									'</ul>' +
+								'</div>' +
+								'<nav class="bottom-menu">' +
+									'<table>' +
+										'<tbody>' +
+											'<tr>' +
+												'<td>' +
+													'<button class="submit color"><?php echo get_ui_string("Guardar"); ?></button>' +
+													'<button onclick="close_this_window(event);"><?php echo get_ui_string("Cancelar"); ?></button>' +
+												'</td>' +
+											'</tr>' +
+										'</tbody>' +
+									'</table>' +
+								'</nav>' +
+							'</form>' +
+						'</div>' +
+					'</div>';
+
+					// Transform it into a JQ objetc.
+					dial = $(dial);
+
+					// Create a selectable within dial.
+					dial.find(".field_team").selectable('team', groups, '-- <?php echo get_ui_string("Equipo"); ?> --', true);
+
+					// Append it to the body.
+					$('body').append(dial);
+					
+				});
+
 			}
 
 			// Refresh the page.
-			function refresh_page() {
+			function refresh_page(e) {
+
+				// Reload.
 				location.reload();
+
 			}
+
+			// Close the current window.
+			function close_this_window(e) {
+
+				// Prevent the default.
+				e.preventDefault();
+
+				// Get the target.
+				var target = e.target || e.srcElement
+
+				// Get the wrapper of the pop-up window and remove it.
+				$(target).parents(".pop-up-window-wrapper").remove();
+
+			}
+
+			// Submit create_new_repo event handler.
+			$(document).on('submit', '#create_new_repo', function(e) {
+
+				// Prevent the regular reaction.
+				e.preventDefault();
+
+				// Get the form.
+				var form = $("#create_new_repo")[0];
+
+				// Retrieve the data from the form.
+				var formData = new FormData(form);
+				
+				// Append the func to the formData.
+				formData.append('func', 'create_repo');
+
+				// Convert it to an object.
+				var data = {};
+				formData.forEach(function(value, key){
+					data[key] = value;
+				});
+
+				// Put the wait message.
+				var proc = processing_message('<?php echo get_ui_string("Creando el repositorio. Espere..."); ?>');
+
+				// Make an AJAX call to GitServerPlus to create the repo.
+				$.ajax({
+					url: "/webman/3rdparty/GitServerPlus/ajax.cgi",
+					method:	"GET",
+					data: data
+				}).done(function(msg) {
+
+					// Remove the processing message.
+					proc.remove();
+
+					// Parse the message.
+					msg = JSON.parse(msg);
+
+					// Check if it was successful or not.
+					if (!msg.success) {
+
+						// Check if it happened because the repo already existed.
+						if (msg.msg == 'Already exists') {
+
+							// Log an error window.
+							var alrt = alert_message('<?php echo get_ui_string("No se ha podido crear el repositorio porque ya existe uno con el mismo nombre."); ?>');
+
+							return;
+
+						}
+
+						// Log an error window.
+						var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido crear el repositorio la acción."); ?>');
+
+						return;
+
+					}
+
+					// Get the wrapper of the pop-up window and remove it.
+					$(this).parents(".pop-up-window-wrapper").remove();
+
+					// Reload.
+					location.reload();
+					
+				});
+
+			});
 
 		</script>
 	</head>
@@ -423,8 +697,8 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 					<tbody>
 						<tr>
 							<td>
-								<button onclick="create_new_repo();"><?php echo get_ui_string("Nuevo repositorio"); ?></button>
-								<button onclick="refresh_page();"><?php echo get_ui_string("Refrescar"); ?></button>
+								<button onclick="create_new_repo(event);"><?php echo get_ui_string("Nuevo repositorio"); ?></button>
+								<button onclick="refresh_page(event);"><?php echo get_ui_string("Refrescar"); ?></button>
 							</td>
 						</tr>
 					</tbody>
@@ -517,96 +791,11 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				?>
 			</div>
 		</div>
-		<div class="pop-up-window-wrapper">
-			<div class="pop-up-window">
-				<form id="create_new_repo" class="pop-up-container" method="post">
-					<table class="repo-info">
-						<tbody>
-							<tr>
-								<td>
-									<label class="required" for="field_team"><?php echo get_ui_string("Equipo"); ?></label>
-								</td>
-								<td></td>
-								<td>
-									<label class="required" for="field_name"><?php echo get_ui_string("Nombre del repositorio"); ?></label>
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<div id="field_team"></div>
-								</td>
-								<td><span>/</span></td>
-								<td>
-									<input id="field_name" name="name" type="text" required />
-								</td>
-							</tr>
-						</tbody>
-					</table>
-					<div>
-						<label for="field_desc"><?php echo get_ui_string("Descripción"); ?></label>
-						<input id="field_desc" name="desc" type="text" />
-					</div>
-					<div>
-						<ul>
-							<li>
-								<label>
-									<input name="access" type="radio" value="1" required />
-									<i></i>
-									<p>
-										<b><?php echo get_ui_string("Público"); ?></b>
-										<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull y hacer push."); ?></span>
-									</p>
-								</label>
-							</li>
-							<li>
-								<label>
-									<input name="access" type="radio" value="2" required />
-									<i></i>
-									<p>
-										<b><?php echo get_ui_string("Protegido"); ?></b>
-										<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull pero solo los del grupo pueden hacer push."); ?></span>
-									</p>
-								</label>
-							</li>
-							<li>
-								<label>
-									<input name="access" type="radio" value="3" required checked />
-									<i></i>
-									<p>
-										<b><?php echo get_ui_string("Privado"); ?></b>
-										<span><?php echo get_ui_string("Solo los usuarios del grupo pueden hacer pull y push."); ?></span>
-									</p>
-								</label>
-							</li>
-						</ul>
-					</div>
-					<nav class="bottom-menu">
-						<table>
-							<tbody>
-								<tr>
-									<td>
-										<button id="submit" class="color"><?php echo get_ui_string("Guardar"); ?></button>
-										<button id="close_pop_up"><?php echo get_ui_string("Cancelar"); ?></button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</nav>
-				</form>
-			</div>
-		</div>
 		<script>
 
 			// Create the select.
-			$("#field_team").selectable('team', ['value 1', 'value 2', 'value 3', 'vaue 4'], '-- Equipo --', true);
+			//$("#field_team").selectable('team', ['value 1', 'value 2', 'value 3', 'vaue 4'], '-- Equipo --', true);
 
-		</script>
-		<!--
-		<div class="pop-up-window-wrapper">
-			<div class="pop-up-window processing">
-				<span>Procesando...<span>
-			</div>
-		</div>
-		-->
+		</script>	
 	</body>
 </html>

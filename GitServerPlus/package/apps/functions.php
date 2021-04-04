@@ -86,6 +86,31 @@ function http_parse_response($response) {
 }
 
 /**
+ * Get the groups.
+ *
+ * Obtains an array containing all the existing groups.
+ * 
+ * @return array
+ */
+function get_groups() {
+
+	// Execute synogroup to get all groups.
+	$groups = shell_exec('/usr/syno/sbin/synogroup --enum all');
+
+	// Split the lines.
+	$groups = explode("\n", $groups);
+
+	// Delete the first line. It's a count.
+	array_shift($groups);
+
+	// Delete empty group names.
+	$groups = array_filter($groups);
+
+	return $groups;
+
+}
+
+/**
  * Obtains a UI string.
  *
  * Obtains the final string that will be displayed on the user interface.
