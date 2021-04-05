@@ -1,25 +1,68 @@
 <?php
 
 /**
- * Example_Class is a sample class for demonstrating PHPDoc
+ * Repo is a class for managing Git repositories.
  * 
  * Repo is a class that allows us to retrieve information from a git
  * repository as well as updating such information.
  * 
  * @package GitServerPlus
  * @author Borja García Quiroga
- * @version $Revision: 1.0.0$
+ * @version $Revision: 2.0.0$
  * @access public
  */
-class Repo {
+class Repo extends SplFileInfo {
 
 	/**
-	 * Git repository DirectoryIterator.
-	 *
-	 * @since 1.0.0
-	 * @var DirectoryIterator $git_dir
+	 * Create a new repo.
+	 * 
+	 * Creates a new Git repository and returns the Repo class.
+	 * 
+	 * @since 1.1.0
+	 * 
+	 * @param string $path Path of the new git repo.
+	 * @return Repo
 	 */
-	private $git_dir;
+	static public function initRepo($path) {
+
+		// Test if it is a repo.
+		if (Repo::testRepo($path))
+			return false;
+
+		// Create the git repo.
+		shell_exec("git init --bare $path");
+
+		// Create the Repo class.
+		$git = new Repo($path);
+
+		return $git;
+
+	}
+
+	/**
+	 * Test git repo.
+	 * 
+	 * Test if a directory is a git repository.
+	 * 
+	 * @param string $path Path of the new git repo.
+	 * @return bool
+	 */
+	static public function testRepo($path) {
+
+		// Check if the file does not exist.
+		if (!file_exists($path))
+			return false;
+
+		// Execute the git command to test the directory.
+		$ret = shell_exec("git --git-dir ${path} rev-parse");
+
+		// If $ts is empty.
+		if ($ret == "" || $ret == "\n")
+			return true;
+
+		return false;
+
+	}
 
 	/**
 	 * Constructor.
@@ -28,12 +71,20 @@ class Repo {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param DirectoryIterator $di DirectoryIterator of the git repo directory.
+	 * @param DirectoryIterator|string $di DirectoryIterator of the git repo directory or path.
 	 */
-	function __construct($di) {
+	public function __construct($dir) {
+
+		// Check if the parameter is a DirectoryIterator.
+		if (is_a($dir, 'DirectoryIterator')) {
+			
+			// Get the path of the repo.
+			$dir = $dir->getPathname();
 		
-		// Set the $git_dir property.
-		$this->git_dir = clone $di;
+		}
+		
+		// Call the SplFileInfo standard constructor.
+		parent::__construct($dir);
 
 	}
 
@@ -49,7 +100,7 @@ class Repo {
 	public function getAccess() {
 		
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Get the permissions.
 		$perms = fileperms($path);
@@ -96,7 +147,7 @@ class Repo {
 	public function getDesc() {
 		
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Return the content of the description.
 		return file_get_contents($path . '/description');
@@ -115,7 +166,7 @@ class Repo {
 	public function getLastUpdate() {
 
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Execute the log command to retrieve the last commit.
 		$ts = shell_exec("git --git-dir ${path} log -1 --format=%ct");
@@ -205,7 +256,7 @@ class Repo {
 	public function getName() {
 		
 		// Return the name excluding the extension.
-		return $this->git_dir->getBasename('.' . $this->git_dir->getExtension());
+		return $this->getBasename('.' . $this->getExtension());
 
 	}
 
@@ -221,7 +272,7 @@ class Repo {
 	public function getNumCommits() {
 
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Execute the log command to retrieve the commit count.
 		$count = shell_exec("git --git-dir ${path} rev-list --all --count");
@@ -243,7 +294,7 @@ class Repo {
 	public function getNumBranches() {
 
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Execute the log command to retrieve the branch count.
 		$count = shell_exec("git --git-dir ${path} branch --all | wc -l");
@@ -265,7 +316,7 @@ class Repo {
 	public function getTeam() {
 		
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Return the group name.
 		return posix_getgrgid(filegroup($path))['name'];
@@ -284,7 +335,7 @@ class Repo {
 	public function setAccess($access) {
 		
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Switch through the options.
 		switch ($access) {
@@ -319,7 +370,7 @@ class Repo {
 	public function setDesc($desc) {
 		
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Store the content of the description.
 		file_put_contents($path . '/description', $desc);
@@ -338,10 +389,37 @@ class Repo {
 	public function setTeam($team) {
 		
 		// Get the path of the repo.
-		$path = $this->git_dir->getPathname();
+		$path = $this->getPathname();
 
 		// Set the group.
 		shell_exec("chgrp -R $team $path");
+
+	}
+
+	/**
+	 * Rename git repo.
+	 * 
+	 * Rename the git repo and return the new Repo.
+	 * 
+	 * @param string $new_path New path to the repo.
+	 * @return Repo
+	 */
+	public function renameRepo($new_path) {
+
+		// Check if the new path is equal to the current one.
+		if ($this->getPathname() == $new_path)
+			return false;
+
+		// Check if the current file is already a repository.
+		if (Repo::testRepo($new_path))
+			return false;
+
+		// Rename the repo.
+		if (!rename($this->getPathname(), $new_path))
+			return false;
+
+		// Create and renew the new Repo instance.
+		return new Repo($new_path);
 
 	}
 	

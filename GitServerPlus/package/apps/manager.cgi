@@ -52,6 +52,12 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				padding: 0;
 				font-family: verdana,arial,tahoma,helvetica,sans-serif;
 				box-sizing: border-box;
+				-webkit-touch-callout: none; /* iOS Safari */
+				-webkit-user-select: none; /* Safari */
+				-khtml-user-select: none; /* Konqueror HTML */
+				-moz-user-select: none; /* Old versions of Firefox */
+				-ms-user-select: none; /* Internet Explorer/Edge */
+				user-select: none;
 			}
 
 			body {
@@ -78,6 +84,10 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				left: 10px;
 				width: auto;
 				background-color: var(--background-color);
+			}
+
+			nav.top-menu {
+				z-index: 100;
 			}
 
 			nav > table {
@@ -167,8 +177,9 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 
 			.git-repo {
 				width: 100%;
-				padding: 20px 20px 25px 20px;
+				padding: 20px 60px 25px 20px;
 				border-top: 1px solid var(--gray-color);
+				position: relative;
 			}
 
 			.git-repo:first-of-type {
@@ -239,6 +250,47 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 
 			.git-repo .more-info span:first-of-type::before {
 				content: none;
+			}
+
+			.git-repo nav.options {
+				position: absolute;
+				top: 20px;
+				right: 20px;
+				bottom: 20px;
+				left: auto;
+				width: 20px;
+				border: none;
+				background: transparent;
+				padding: 0;
+			}
+
+			.git-repo nav.options table {
+				height: 100%;
+			}
+
+			.git-repo nav.options table > tbody > tr > td {
+				text-align: right;
+			}
+
+			.git-repo nav.options button {
+				font-family: 'Font Awesome 5 Free';
+				font-weight: 600;
+				font-size: 14px;
+				display: inline-block;
+				padding: 0;
+				margin: 0;
+				background: transparent;
+				border: none;
+				border-radius: 0;
+				width: auto;
+				min-width: auto;
+				vertical-align: middle;
+				line-height: 1;
+				height: auto;
+			}
+
+			.git-repo nav.options button:hover {
+				opacity: 0.6;
 			}
 
 			.pop-up-window-wrapper {
@@ -575,7 +627,7 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 										'<tbody>' +
 											'<tr>' +
 												'<td>' +
-													'<button class="submit color"><?php echo get_ui_string("Guardar"); ?></button>' +
+													'<button class="submit color"><?php echo get_ui_string("Crear"); ?></button>' +
 													'<button onclick="close_this_window(event);"><?php echo get_ui_string("Cancelar"); ?></button>' +
 												'</td>' +
 											'</tr>' +
@@ -594,6 +646,170 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 
 					// Append it to the body.
 					$('body').append(dial);
+					
+				});
+
+			}
+
+			// Open the dialog to create a new repository.
+			function edit_repo(e) {
+
+				// Get the target.
+				var target = e.target || e.srcElement
+
+				// Get the path of the repo.
+				var path = $(target).parents(".git-repo").attr("data-path");
+				
+				// Put the wait message.
+				var proc = processing_message('<?php echo get_ui_string("Espere..."); ?>');
+
+				$.ajax({
+					url: 	"/webman/3rdparty/GitServerPlus/ajax.cgi",
+					method:	"GET",
+					data: 	{
+						'func':	'get_repo_info',
+						'repo':	path
+					}
+				}).done(function(msg) {
+
+					// Parse the message.
+					msg = JSON.parse(msg);
+
+					// Check if it was successful or not.
+					if (!msg.success) {
+
+						// Remove the processing message.
+						proc.remove();
+
+						// Log an error window.
+						var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido completar la acción."); ?>');
+
+						return;
+
+					}
+
+					// Get the repo info.
+					var repo = msg.return;
+
+					// Create the dialog window.
+					var dial = '<div class="pop-up-window-wrapper">' +
+						'<div class="pop-up-window">' +
+							'<form id="update_repo" class="pop-up-container" method="GET">' +
+								'<input type="hidden" name="old_path" value="' + path + '" />' +
+								'<table class="repo-info">' +
+									'<tbody>' +
+										'<tr>' +
+											'<td>' +
+												'<label class="required"><?php echo get_ui_string("Equipo"); ?></label>' +
+											'</td>' +
+											'<td></td>' +
+											'<td>' +
+												'<label class="required" for="field_name"><?php echo get_ui_string("Nombre del repositorio"); ?></label>' +
+											'</td>' +
+										'</tr>' +
+										'<tr>' +
+											'<td>' +
+												'<div class="field_team"></div>' +
+											'</td>' +
+											'<td><span>/</span></td>' +
+											'<td>' +
+												'<input id="field_name" name="name" type="text" pattern="[A-Za-z0-9]+" value="' + repo.name + '" required />' +
+											'</td>' +
+										'</tr>' +
+									'</tbody>' +
+								'</table>' +
+								'<div>' +
+									'<label for="field_desc"><?php echo get_ui_string("Descripción"); ?></label>' +
+									'<input id="field_desc" name="desc" type="text" value="' + repo.desc + '" />' +
+								'</div>' +
+								'<div>' +
+									'<ul>' +
+										'<li>' +
+											'<label>' +
+												'<input name="access" type="radio" value="1" required ' + ((repo.access == 1) ? 'checked' : '') + ' />' +
+												'<i></i>' +
+												'<p>' +
+													'<b><?php echo get_ui_string("Público"); ?></b>' +
+													'<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull y hacer push."); ?></span>' +
+												'</p>' +
+											'</label>' +
+										'</li>' +
+										'<li>' +
+											'<label>' +
+												'<input name="access" type="radio" value="2" required ' + ((repo.access == 2) ? 'checked' : '') + ' />' +
+												'<i></i>' +
+												'<p>' +
+													'<b><?php echo get_ui_string("Protegido"); ?></b>' +
+													'<span><?php echo get_ui_string("Todos los usuarios pueden hacer pull pero solo los del grupo pueden hacer push."); ?></span>' +
+												'</p>' +
+											'</label>' +
+										'</li>' +
+										'<li>' +
+											'<label>' +
+												'<input name="access" type="radio" value="3" required ' + ((repo.access == 3) ? 'checked' : '') + ' />' +
+												'<i></i>' +
+												'<p>' +
+													'<b><?php echo get_ui_string("Privado"); ?></b>' +
+													'<span><?php echo get_ui_string("Solo los usuarios del grupo pueden hacer pull y push."); ?></span>' +
+												'</p>' +
+											'</label>' +
+										'</li>' +
+									'</ul>' +
+								'</div>' +
+								'<nav class="bottom-menu">' +
+									'<table>' +
+										'<tbody>' +
+											'<tr>' +
+												'<td>' +
+													'<button class="submit color"><?php echo get_ui_string("Guardar"); ?></button>' +
+													'<button onclick="close_this_window(event);"><?php echo get_ui_string("Cancelar"); ?></button>' +
+												'</td>' +
+											'</tr>' +
+										'</tbody>' +
+									'</table>' +
+								'</nav>' +
+							'</form>' +
+						'</div>' +
+					'</div>';
+
+					// Transform it into a JQ objetc.
+					dial = $(dial);
+
+					// Make an AJAX call to GitServerPlus to get the groups.
+					$.ajax({
+						url: 	"/webman/3rdparty/GitServerPlus/ajax.cgi",
+						method:	"GET",
+						data: 	{
+							'func':	'get_groups'
+						}
+					}).done(function(msg) {
+
+						// Remove the processing message.
+						proc.remove();
+
+						// Parse the message.
+						msg = JSON.parse(msg);
+
+						// Check if it was successful or not.
+						if (!msg.success) {
+
+							// Log an error window.
+							var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido completar la acción."); ?>');
+
+							return;
+
+						}
+
+						// Get the groups.
+						var groups = msg.return;
+
+						// Create a selectable within dial.
+						dial.find(".field_team").selectable('team', groups, repo.team, true);
+
+						// Append it to the body.
+						$('body').append(dial);
+						
+					});
 					
 				});
 
@@ -628,7 +844,7 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				e.preventDefault();
 
 				// Get the form.
-				var form = $("#create_new_repo")[0];
+				var form = $(this)[0];
 
 				// Retrieve the data from the form.
 				var formData = new FormData(form);
@@ -672,7 +888,84 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 						}
 
 						// Log an error window.
-						var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido crear el repositorio la acción."); ?>');
+						var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido crear el repositorio."); ?>');
+
+						return;
+
+					}
+
+					// Get the wrapper of the pop-up window and remove it.
+					$(this).parents(".pop-up-window-wrapper").remove();
+
+					// Reload.
+					location.reload();
+					
+				});
+
+			});
+
+			// Submit create_new_repo event handler.
+			$(document).on('submit', '#update_repo', function(e) {
+
+				// Prevent the regular reaction.
+				e.preventDefault();
+
+				// Get the form.
+				var form = $(this)[0];
+
+				// Retrieve the data from the form.
+				var formData = new FormData(form);
+
+				// Append the func to the formData.
+				formData.append('func', 'update_repo');
+
+				// Convert it to an object.
+				var data = {};
+				formData.forEach(function(value, key){
+					data[key] = value;
+				});
+
+				// Put the wait message.
+				var proc = processing_message('<?php echo get_ui_string("Actualizando el repositorio. Espere..."); ?>');
+
+				// Make an AJAX call to GitServerPlus to create the repo.
+				$.ajax({
+					url: "/webman/3rdparty/GitServerPlus/ajax.cgi",
+					method:	"GET",
+					data: data
+				}).done(function(msg) {
+
+					// Remove the processing message.
+					proc.remove();
+
+					// Parse the message.
+					msg = JSON.parse(msg);
+
+					// Check if it was successful or not.
+					if (!msg.success) {
+
+						// Check if it happened because the repo already existed.
+						if (msg.msg == 'Not found') {
+
+							// Log an error window.
+							var alrt = alert_message('<?php echo get_ui_string("No se ha podido actualizar el repositorio porque ya no existe."); ?>');
+
+							return;
+
+						}
+
+						// Check if it happened because the repo already existed.
+						if (msg.msg == 'Already exists') {
+
+							// Log an error window.
+							var alrt = alert_message('<?php echo get_ui_string("No se ha podido actualizar el repositorio porque ya existe uno con el mismo nombre."); ?>');
+
+							return;
+
+						}
+
+						// Log an error window.
+						var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido actualizar el repositorio."); ?>');
 
 						return;
 
@@ -745,6 +1038,9 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 					// Get the total number of branches.
 					$num_branches = $repo->getNumBranches();
 
+					// Get the path of the repo.
+					$path = $repo->getPathname();
+
 					// Init the access type names.
 					$access_names = array(
 						1	=> get_ui_string('Público'),
@@ -760,7 +1056,7 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 					);
 
 					?>
-					<div class="git-repo">
+					<div class="git-repo" data-path="<?php echo $path; ?>">
 						<table>
 							<tbody>
 								<tr>
@@ -783,6 +1079,27 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 								</tr>
 							</tbody>
 						</table>
+						<nav class="options">
+							<table>
+								<tbody>
+									<tr>
+										<td>
+											<button class="edit" onclick="edit_repo(event);"></button>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<button class="link"></button>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<button class="delete"></button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</nav>
 					</div>
 					<?php
 
