@@ -43,6 +43,15 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				user-select: none;
 			}
 
+			input {
+				-webkit-touch-callout: default; /* iOS Safari */
+				-webkit-user-select: auto; /* Safari */
+				-khtml-user-select: auto; /* Konqueror HTML */
+				-moz-user-select: auto; /* Old versions of Firefox */
+				-ms-user-select: auto; /* Internet Explorer/Edge */
+				user-select: auto;
+			}
+
 			body {
 				font-size: 12px;
 				padding: 0 10px;
