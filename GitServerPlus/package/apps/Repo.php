@@ -397,6 +397,30 @@ class Repo extends SplFileInfo {
 	}
 
 	/**
+	 * Delete git repo.
+	 * 
+	 * Delete the git repo and all its files.
+	 * 
+	 * @return bool
+	 */
+	public function delete() {
+
+		// Get the path of the repo.
+		$path = $this->getPathname();
+
+		// Execute the command.
+		$status = shell_exec("rm -rf $path 2>&1; echo $?");
+
+		// If $status is empty.
+		if ($ret == "" || $ret == "\n")
+			return true;
+
+		// Otherwise, it didn't work.
+		return false;
+
+	}
+
+	/**
 	 * Rename git repo.
 	 * 
 	 * Rename the git repo and return the new Repo.

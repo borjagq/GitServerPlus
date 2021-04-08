@@ -5,25 +5,8 @@
 // Require the functions file.
 require_once(__DIR__ . '/../../functions.php');
 
-// Get the auth message.
-$auth_msg = shell_exec('/usr/syno/synoman/webman/login.cgi');
-
-// Parse the HTTP response.
-$auth_msg = http_parse_response($auth_msg)['Content'];
-
-// Parse the JSON response.
-$auth_msg = json_decode($auth_msg);
-
-/*
-// Check if the user is logged in.
-if (!$auth_msg->success) {
-
-	// Set the forbidden header status.
-	http_response_code(403);
-	die();
-
-}
-*/
+// Authentication.
+auth_control();
 
 ?>
 

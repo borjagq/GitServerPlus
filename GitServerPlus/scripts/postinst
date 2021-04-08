@@ -9,4 +9,7 @@ chmod u+x $SYNOPKG_PKGDEST/apps/*/*.cgi
 chmod u+x $SYNOPKG_PKGDEST/apps/*/*/*.cgi
 chmod u+x $SYNOPKG_PKGDEST/apps/*/*/*/*.cgi
 
+# Create a folder for the git repos.
+mkdir /volume1/git
+
 exit 0

@@ -1,6 +1,57 @@
 <?php
 
 /**
+ * Authentication controls.
+ * 
+ * Terminates all non-authenticated access attempts.
+ */
+function auth_control() {
+
+	// Get the auth message.
+	$auth_msg = shell_exec('/usr/syno/synoman/webman/login.cgi');
+
+	// Parse the HTTP response.
+	$auth_msg = http_parse_response($auth_msg)['Content'];
+
+	// Parse the JSON response.
+	$auth_msg = json_decode($auth_msg);
+
+	// Check if the user is logged in.
+	if (!$auth_msg->success) {
+
+		// Set the forbidden header status.
+		http_response_code(403);
+		die();
+
+	}
+
+	// Get the user token.
+	$token = $auth_msg->SynoToken;
+
+	// Set the token env variable.
+	putenv('QUERY_STRING=SynoToken=' . $token);
+
+	// Get the username.
+	$username = trim(shell_exec('/usr/syno/synoman/webman/modules/authenticate.cgi'));
+
+	// Get the user's groups.
+	$groups = trim(shell_exec('id -G ' . escapeshellarg($username) . ' 2>/dev/null'));
+	
+	// Separate the different groups and convert them to ints.
+	$groups = array_map('intval', explode(' ', $groups));
+
+	// Check if it belongs to the administrators.
+	if (!in_array(101, $groups)) {
+
+		// Set the forbidden header status.
+		http_response_code(403);
+		die();
+
+	}
+
+}
+
+/**
  * Parses a HTTP response.
  *
  * Receives a string containing a HTTP response formed by headers and a message.
@@ -107,6 +158,23 @@ function get_groups() {
 	$groups = array_filter($groups);
 
 	return $groups;
+
+}
+
+/**
+ * Get the IP address.
+ * 
+ * Get the private IP address assigned to the given interface.
+ * 
+ * @param string $iface Ethernet interface.
+ * @return string
+ */
+function get_ip($iface) {
+
+	// Get the IP.
+	$ip = shell_exec("/sbin/ifconfig $iface | grep 'inet addr' | cut -d: -f2 | awk '{print $1}'");
+
+	return trim($ip);
 
 }
 

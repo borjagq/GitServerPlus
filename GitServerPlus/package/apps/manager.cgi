@@ -8,25 +8,8 @@ require_once(__DIR__ . '/functions.php');
 // Require the classes.
 require_once(__DIR__ . '/Repo.php');
 
-// Get the auth message.
-$auth_msg = shell_exec('/usr/syno/synoman/webman/login.cgi');
-
-// Parse the HTTP response.
-$auth_msg = http_parse_response($auth_msg)['Content'];
-
-// Parse the JSON response.
-$auth_msg = json_decode($auth_msg);
-
-/*
-// Check if the user is logged in.
-if (!$auth_msg->success) {
-
-	// Set the forbidden header status.
-	http_response_code(403);
-	die();
-
-}
-*/
+// Authentication.
+auth_control();
 
 // Set the language.
 setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
@@ -320,6 +303,40 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				
 			}
 
+			.pop-up-window-wrapper > .pop-up-window.pop-up-command {
+				height: 106px;
+			}
+
+			.pop-up-window > nav.top-bar {
+				position: absolute;
+				top: 0;
+				right: 0;
+				left: 0;
+				border: none;
+				background-color: transparent;
+				text-align: right;
+				padding: 12px;
+			}
+
+			.pop-up-window > nav.top-bar .x-button {
+				width: 24px;
+				height: 24px;
+				background-repeat: no-repeat;
+				background-image: url(resources/rt_button.png?v=03221320211843179);
+				background-size: 24px 768px;
+				background-position: 0 0px;
+				overflow: hidden;
+				cursor: pointer;
+				background-color: transparent;
+				padding: 0;
+				min-width: auto;
+				border: none;
+			}
+
+			.pop-up-window > nav.top-bar .x-button:hover {
+				background-position: 0 -24px;
+			}
+
 			.pop-up-window-wrapper > .pop-up-window > .pop-up-container > nav {
 				position: static;
 				padding: 20px 0 0 0;
@@ -337,6 +354,10 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				text-align: center;
 			}
 
+			.pop-up-window-wrapper > .pop-up-window.pop-up-confirm nav > table > tbody > tr > td {
+				text-align: right;
+			}
+
 			.pop-up-window-wrapper > .pop-up-window.processing {
 				position: absolute;
 				top: 0;
@@ -351,9 +372,14 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				cursor: wait;
 			}
 
-			.pop-up-window-wrapper > .pop-up-window.pop-up-alert {
+			.pop-up-window-wrapper > .pop-up-window.pop-up-alert,
+			.pop-up-window-wrapper > .pop-up-window.pop-up-confirm {
 				width: 400px;
 				height: 153px;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-confirm {
+				height: 124px;
 			}
 
 			.pop-up-window-wrapper > .pop-up-window.processing > span {
@@ -377,10 +403,33 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 				padding: 20px;
 			}
 
-			.pop-up-window-wrapper > .pop-up-window.pop-up-alert > .pop-up-container > span {
+			.pop-up-window-wrapper > .pop-up-window.pop-up-command > .pop-up-container {
+				padding: 40px;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-command > .pop-up-container > .path-copy-field {
+				width: calc(100% - 33px);
+				margin-bottom: 0;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-command > .pop-up-container > .button-copy {
+				width: 26px;
+				min-width: auto;
+				padding: 0;
+				font-family: 'Font Awesome 5 Free';
+				margin-bottom: 0;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-alert > .pop-up-container > span,
+			.pop-up-window-wrapper > .pop-up-window.pop-up-confirm > .pop-up-container > span {
 				display: inline-block;
 				height: 48px;
 				width: 100%;
+			}
+
+			.pop-up-window-wrapper > .pop-up-window.pop-up-confirm > .pop-up-container > span {
+				height: 33px;
+				margin-bottom: 0;
 			}
 
 			.repo-info {
@@ -477,6 +526,18 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 		<script src="/webman/3rdparty/GitServerPlus/js/selectable/selectable.js.cgi"></script>
 		<script>
 
+			// Extend the String class.
+			if (!String.prototype.format) {
+
+				// Create the function.
+				String.prototype.format = function(...args) {
+					return this.replace(/(\{\d+\})/g, function(a) {
+						return args[+(a.substr(1, a.length - 2)) || 0];
+					});
+				};
+			
+			}
+
 			// Processing message.
 			function processing_message(msg) {
 
@@ -516,6 +577,44 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 						'</div>' +
 					'</div>' +
 				'</div>');
+
+				// Append it to the body.
+				$('body').append(alrt);
+
+				return alrt;
+
+			}
+
+			// Confirm message.
+			function confirm_message(msg, func) {
+
+				// Create the processing message.
+				var alrt = $('<div class="pop-up-window-wrapper">' +
+					'<div class="pop-up-window pop-up-confirm">' +
+						'<div class="pop-up-container">' +
+							'<span>' + msg + '</span>' +
+							'<nav class="bottom-menu">' +
+								'<table>' +
+									'<tbody>' +
+										'<tr>' +
+											'<td>' +
+												'<button class="color button-yes"><?php echo get_ui_string("Sí"); ?></button>' +
+												'<button class="button-no" onclick="close_this_window(event);"><?php echo get_ui_string("No"); ?></button>' +
+											'</td>' +
+										'</tr>' +
+									'</tbody>' +
+								'</table>' +
+							'</nav>' +
+						'</div>' +
+					'</div>' +
+				'</div>');
+
+				// Convert it to a JQuery object.
+				alrt = $(alrt);
+
+				// Set the function in the confirmation button.
+				alrt.find('.button-yes').click(close_this_window);
+				alrt.find('.button-yes').click(func);
 
 				// Append it to the body.
 				$('body').append(alrt);
@@ -837,6 +936,112 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 
 			}
 
+			// Get the git repo's clone command.
+			function get_the_repo_command(e) {
+
+				// Get the target.
+				var target = e.target || e.srcElement
+
+				// Get the path of the repo.
+				var path = $(target).parents(".git-repo").attr("data-path");
+
+				// Create the processing message.
+				var alrt = $('<div class="pop-up-window-wrapper">' +
+					'<div class="pop-up-window pop-up-command">' +
+						'<nav class="top-bar">' +
+							'<button class="x-button" onclick="close_this_window(event);"></button>' +
+						'</nav>' +
+						'<div class="pop-up-container">' +
+							'<input type="text" class="path-copy-field" value="git clone USER@<?php echo get_ip('eth0'); ?>:' + path + '" readonly>' +
+							'<button class="button-copy"></button>' +
+						'</div>' +
+					'</div>' +
+				'</div>');
+
+				// Convert it to a JQuery object.
+				alrt = $(alrt);
+
+				// Set the function in the confirmation button.
+				alrt.find('.button-copy').click(function(e) {
+
+					// Get the target.
+					var target = e.target || e.srcElement
+
+					// Get the copy field element.
+					var elm = $(target).siblings('.path-copy-field');
+
+					// Select its contents.
+					elm.select();
+
+					// Copy it.
+					document.execCommand('copy');
+
+				});
+
+				// Append it to the body.
+				$('body').append(alrt);
+
+			}
+
+			// Delete the git repo.
+			function delete_repo(e) {
+
+				// Get the target.
+				var target = e.target || e.srcElement
+
+				// Get the path of the repo.
+				var path = $(target).parents(".git-repo").attr("data-path");
+				
+				// Get the name of the repo.
+				var name = $(target).parents(".git-repo").find(".repo-name").text();
+
+				// Get the message.
+				var msg = '<?php echo get_ui_string("¿Seguro que quieres eliminar el repositorio \"{0}\"? Esta acción no puede desacerse."); ?>';
+
+				// Format the string.
+				msg = msg.format(name);
+
+				// Create the confirm window.
+				confirm_message(msg, function(e) {
+
+					// Put the wait message.
+					var proc = processing_message('<?php echo get_ui_string("Eliminando el repositorio. Espere..."); ?>');
+
+					// Make an AJAX call to GitServerPlus to create the repo.
+					$.ajax({
+						url: "/webman/3rdparty/GitServerPlus/ajax.cgi",
+						method:	"GET",
+						data: {
+							"func":	"delete_repo",
+							"repo":	name
+						}
+					}).done(function(msg) {
+
+						// Remove the processing message.
+						proc.remove();
+
+						// Parse the message.
+						msg = JSON.parse(msg);
+
+						// Check if it was successful or not.
+						if (!msg.success) {
+
+							// Log an error window.
+							var alrt = alert_message('<?php echo get_ui_string("Un error ha impedido eliminar el repositorio."); ?>');
+
+							return;
+
+						}
+
+						// Reload.
+						location.reload();
+						
+					});
+
+				});
+				
+			}
+
 			// Submit create_new_repo event handler.
 			$(document).on('submit', '#create_new_repo', function(e) {
 
@@ -1061,7 +1266,7 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 							<tbody>
 								<tr>
 									<td>
-										<h2><?php echo $team; ?> / <b><?php echo $name; ?></b></h2>
+										<h2><?php echo $team; ?> / <b class="repo-name"><?php echo $name; ?></b></h2>
 										<span class="access <?php echo $access_classes[$access]; ?>"><?php echo $access_names[$access]; ?></span>
 									</td>
 								</tr>
@@ -1089,12 +1294,12 @@ setlocale(LC_TIME, 'es_ES', 'es_ES.utf8');
 									</tr>
 									<tr>
 										<td>
-											<button class="link"></button>
+											<button class="link" onclick="get_the_repo_command(event);"></button>
 										</td>
 									</tr>
 									<tr>
 										<td>
-											<button class="delete"></button>
+											<button class="delete" onclick="delete_repo(event);"></button>
 										</td>
 									</tr>
 								</tbody>

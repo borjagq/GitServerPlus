@@ -2,6 +2,8 @@
 
 case $1 in
 	start)
+		# Create a symlink to the git repos.
+		ln -s /volume1/git /git
 		exit 0
 	;;
 	stop)

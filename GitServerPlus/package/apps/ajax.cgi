@@ -8,29 +8,11 @@ require_once(__DIR__ . '/functions.php');
 // Require the classes.
 require_once(__DIR__ . '/Repo.php');
 
-// Get the auth message.
-$auth_msg = shell_exec('/usr/syno/synoman/webman/login.cgi');
-
-// Parse the HTTP response.
-$auth_msg = http_parse_response($auth_msg)['Content'];
-
-// Parse the JSON response.
-$auth_msg = json_decode($auth_msg);
-
-/*
-// Check if the user is logged in.
-if (!$auth_msg->success) {
-
-	// Set the forbidden header status.
-	http_response_code(403);
-	die('{"success": false, "msg": "Forbidden"}');
-	die();
-
-}
-*/
-
 // Populate the $_GET variable.
 parse_str(getenv('QUERY_STRING'), $_GET);
+
+// Authentication.
+auth_control();
 
 // Check that the variable function is set.
 if (!isset($_GET['func']))
@@ -86,6 +68,42 @@ switch ($_GET['func']) {
 		die('{"success": true}');
 
 		break;
+
+	// Return the repo's info.
+	case 'delete_repo':
+
+		// Get the parameters.
+		$name = $_GET['repo'];
+
+		// Check if the name matches the accepted regex.
+		if (!preg_match('/[A-Za-z0-9]+/', $name))
+			die('{"success": false, "msg": "Wrong name"}');
+
+		// Create the path for the git repo.
+		$path = '/git/' . $name . '.git';
+
+		// Check if the file does not exist.
+		if (!Repo::testRepo($path))
+			die('{"success": false, "msg": "Not found"}');
+
+		// Create the Repo class.
+		$git = new Repo($path);
+
+		// Delete the repo.
+		if (!$git->delete())
+			die('{"success": false, "msg": "Could not delete"}');
+
+		// Build the return var.
+		$ret = array(
+			"success"	=> true,
+			"return"	=> $ret
+		);
+
+		// Echo the result.
+		echo json_encode($ret);
+
+		break;
+	
 
 	// Return the user groups in the system.
 	case 'get_groups':
